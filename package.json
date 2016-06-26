@@ -1,0 +1,8 @@
+{
+  "name": "ebay-api",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.14.0",
+    "moment": "^2.13.0"
+  }
+}
