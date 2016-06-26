@@ -1,3 +1,3 @@
 #!/bin/bash
 
-node api/server.js
+node server.js
