@@ -9,7 +9,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/ebay-listings', function(req, res) {
-    var listings = ebayApi.getListings({
+    ebayApi.getListings({
         currentPage:  1,
         maxPages: 100,
         //operationName: "findItemsByKeywords",
@@ -17,9 +17,13 @@ app.get('/ebay-listings', function(req, res) {
         operationName: "findCompletedItems",
         responseFieldName: "findCompletedItemsResponse",
         query: "pokemon booster"
-    });
+    }).then(function(listings) {
+        console.log("listings", listings);
 
-    return listings;
+        res.json({
+            listings: listings
+        });
+    });
 });
 
 app.listen(3000, function () {
