@@ -8,7 +8,7 @@ app.get('/', function (req, res) {
     res.send('Hello World!');
 });
 
-app.get('/ebay-listings', function(req, res) {
+app.get('/ebay/listings', function(req, res) {
     ebayApi.getListings({
         currentPage:  1,
         maxPages: 100,
@@ -18,8 +18,6 @@ app.get('/ebay-listings', function(req, res) {
         responseFieldName: "findCompletedItemsResponse",
         query: "pokemon booster"
     }).then(function(listings) {
-        console.log("listings", listings);
-
         res.json({
             listings: listings
         });
@@ -27,5 +25,5 @@ app.get('/ebay-listings', function(req, res) {
 });
 
 app.listen(3000, function () {
-    console.log('Example app listening on port 3000!');
+    console.log('API server running on port 3000!');
 });
