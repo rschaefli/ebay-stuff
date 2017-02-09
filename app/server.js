@@ -1,12 +1,13 @@
 'use strict';
 
-var express = require('express'),
+var config = require('./config/' + process.env.ENVIRONMENT),
+    express = require('express'),
     app = express(),
     rp = require('request-promise'),
     path = require('path');
 
 app.get('/', function(req, res) {
-  return rp('http://localhost:3000/')
+  return rp(config.api_host)
     .then(function(result) {
       return res.json(result);
     });
@@ -14,7 +15,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/listings', function (req, res) {
-  return rp('http://localhost:3000/ebay/listings')
+  return rp(config.api_host + '/ebay/listings')
     .then(function(result) {
       res.json(result);
     })

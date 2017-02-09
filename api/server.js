@@ -1,6 +1,6 @@
 'use strict';
 
-var config = require('./config/sandbox.js'),
+var config = require('./config/' + process.env.ENVIRONMENT),
     express = require('express'),
     app = express(),
     ebayApi = require('./lib/ebay-api');

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-node server.js
+ENVIRONMENT=$1 node server.js
