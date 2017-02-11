@@ -27,14 +27,13 @@ app.set('view engine', 'dust');
 app.set('views', path.resolve(__dirname, './views'));
 
 app.get('/', function(req, res) {
-  return rp(config.api_host)
+  return rp(config.apiHost)
     .then(function(result) {
 
       console.log('result from API: ' + result);
-      console.log('config: ', config);
 
       return res.render('index', {
-        ebayAuthUrl: 'https://signin.sandbox.ebay.com/authorize?' +
+        ebayAuthUrl: config.ebayApiHost + '/authorize?' +
           'client_id=' + config.appid + '&' +
           'redirect_uri=' + config.runame + '&' +
           'response_type=code&' +
@@ -47,12 +46,40 @@ app.get('/', function(req, res) {
 });
 
 app.get('/auth-success', function(req, res) {
-  console.log(req.query.code);
-  res.send('Success!');
+  var authCode = req.query.code,
+      unencodedAuthString = config.appid + ':' + config.certid,
+      encodedAuthString = new Buffer(unencodedAuthString).toString('base64');
+
+  var postParams = {
+    method: 'POST',
+    uri: 'https://api.sandbox.ebay.com/identity/v1/oauth2/token?' +
+      'grant_type=authorization_code&' +
+      'code=' + encodeURIComponent(authCode) + '&' +
+      'redirect_uri=' + config.runame,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + encodedAuthString
+    },
+    json: true
+  };
+
+  return rp(postParams)
+    .then(function(result) {
+      console.log('authCode', authCode);
+      console.log('result', result);
+      res.send('Authentication success!');
+    }).catch(function(err) {
+      console.log('failed to authenticate with ebay', err);
+      res.send('failed to authenticate');
+    });
+});
+
+app.get('/auth-failure', function(req, res) {
+  res.send('Authentication failed');
 });
 
 app.get('/listings', function (req, res) {
-  return rp(config.api_host + '/ebay/listings')
+  return rp(config.apiHost + '/ebay/listings')
     .then(function(result) {
       res.json(result);
     })

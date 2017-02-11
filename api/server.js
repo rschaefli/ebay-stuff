@@ -6,7 +6,6 @@ var config = require('./config/' + process.env.ENVIRONMENT),
     ebayApi = require('./lib/ebay-api');
 
 app.get('/', function (req, res) {
-  console.log(config.runame);
   res.send('Hello World!');
 });
 

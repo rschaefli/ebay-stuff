@@ -1,6 +1,8 @@
 var config = {};
 
-config.api_host = 'http://localhost:3000';
+config.apiHost = 'http://localhost:3000';
+
+config.ebayApiHost = 'https://signin.sandbox.ebay.com';
 
 config.runame = 'Ricardo_Schaefl-RicardoS-Ricard-lvjxptqj';
 config.appid = 'RicardoS-RicardoS-SBX-f1fadd220-fb2e4453';
