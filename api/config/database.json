@@ -1,0 +1,14 @@
+{
+  "defaultEnt": "dev",
+  "dev": {
+    "driver": "pg",
+    "filename": ":memory:"
+  },
+
+  "pg": {
+    "driver": "pg",
+    "host": "localhost",
+    "database": "ebay",
+    "schema": "ebay"
+  }
+}
