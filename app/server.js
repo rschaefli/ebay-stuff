@@ -9,7 +9,9 @@ var config = require('./config/' + process.env.ENVIRONMENT),
     express = require('express'),
     app = express(),
     rp = require('request-promise'),
-    path = require('path');
+    path = require('path'),
+    xmlUtil = require('./lib/util/conversion/xml')(),
+    ebayApi = require('./lib/ebayApi')(config);
 
 var dust = require('express-dustjs');
 
@@ -27,51 +29,49 @@ app.set('view engine', 'dust');
 app.set('views', path.resolve(__dirname, './views'));
 
 app.get('/', function(req, res) {
-  return rp(config.apiHost)
+  return ebayApi.getSessionId()
     .then(function(result) {
+      return xmlUtil.xmlToJSON(result, function(err, json) {
+        console.log('json result', json);
 
-      console.log('result from API: ' + result);
+        var sessionId = json.GetSessionIDResponse.SessionID[0];
 
-      return res.render('index', {
-        ebayAuthUrl: config.ebayApiHost + '/authorize?' +
-          'client_id=' + config.appid + '&' +
-          'redirect_uri=' + config.runame + '&' +
-          'response_type=code&' +
-          'state=' + '&' +
-          'scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope%2Fsell.account%20' +
-          'https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope%2Fsell.inventory'
+        return res.render('index', {
+          ebayAuthUrl: config.ebayLoginHost + '/ws/eBayISAPI.dll?SignIn' +
+            '&runame=' + config.runame +
+            '&SessID=' + sessionId +
+            '&ruparams=' + encodeURIComponent('sessionId=' + sessionId)
+        });
+      });
+
+      //return res.sendFile(path.join(__dirname+'/public/html/index.html'));
+    });
+});
+
+app.get('/authenticating', function(req, res) {
+  var sessionId = req.query.sessionId;
+
+  return ebayApi.fetchToken(sessionId)
+    .then(function(result) {
+      return xmlUtil.xmlToJSON(result, function(err, json) {
+        var ebayAuthToken = json.FetchTokenResponse.eBayAuthToken[0];
+
+        // TODO: stick the auth token on user's session
+        // also store it in the DB with the expiration date
+
+        return ebayApi.getMyEbaySelling(ebayAuthToken)
+          .then(function(result) {
+            return xmlUtil.xmlToJSON(result, function(err, json) {
+              res.send(json);
+            });
+          });
+
       });
     });
-  //return res.sendFile(path.join(__dirname+'/public/html/index.html'));
 });
 
 app.get('/auth-success', function(req, res) {
-  var authCode = req.query.code,
-      unencodedAuthString = config.appid + ':' + config.certid,
-      encodedAuthString = new Buffer(unencodedAuthString).toString('base64');
-
-  var postParams = {
-    method: 'POST',
-    uri: 'https://api.sandbox.ebay.com/identity/v1/oauth2/token?' +
-      'grant_type=authorization_code&' +
-      'code=' + encodeURIComponent(authCode) + '&' +
-      'redirect_uri=' + config.runame,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + encodedAuthString
-    },
-    json: true
-  };
-
-  return rp(postParams)
-    .then(function(result) {
-      console.log('authCode', authCode);
-      console.log('result', result);
-      res.send('Authentication success!');
-    }).catch(function(err) {
-      console.log('failed to authenticate with ebay', err);
-      res.send('failed to authenticate');
-    });
+  res.send('Authentication successful!');
 });
 
 app.get('/auth-failure', function(req, res) {

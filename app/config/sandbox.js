@@ -2,7 +2,11 @@ var config = {};
 
 config.apiHost = 'http://localhost:3000';
 
-config.ebayApiHost = 'https://signin.sandbox.ebay.com';
+config.ebayLoginHost = 'https://signin.sandbox.ebay.com';
+config.ebayAuthHost = 'https://api.sandbox.ebay.com/identity/v1/oauth2';
+config.ebayInventoryHost = 'https://api.sandbox.ebay.com/sell/inventory/v1';
+
+config.ebayApiVersion = '967';
 
 config.runame = 'Ricardo_Schaefl-RicardoS-Ricard-lvjxptqj';
 config.appid = 'RicardoS-RicardoS-SBX-f1fadd220-fb2e4453';
