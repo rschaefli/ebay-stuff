@@ -1,11 +1,12 @@
 'use strict';
 
+var Promise = require('bluebird'),
+    xmlUtil = require('./util/conversion/xml')(),
+    rp = require('request-promise');
+
 module.exports = function(config) {
 
-  var xmlUtil = require('./util/conversion/xml')(),
-      rp = require('request-promise');
-
-  function getSessionId() {
+  function getSessionId(onComplete) {
     var requestType = 'GetSessionID';
 
     var xml = xmlUtil.jsonToXML(
@@ -22,7 +23,7 @@ module.exports = function(config) {
         }
       });
 
-    return rp({
+    return xmlResponseToJson(rp({
       method: 'POST',
       uri: 'https://api.sandbox.ebay.com/ws/api.dll',
       headers: {
@@ -35,10 +36,10 @@ module.exports = function(config) {
         'Content-Type': 'text/xml'
       },
       body: xml
-    });
+    }), onComplete);
   }
 
-  function fetchToken(sessionId) {
+  function fetchToken(sessionId, onComplete) {
     var requestType = 'FetchToken';
 
     var xml = xmlUtil.jsonToXML(
@@ -56,7 +57,7 @@ module.exports = function(config) {
         }
       });
 
-    return rp({
+    return xmlResponseToJson(rp({
       method: 'POST',
       uri: 'https://api.sandbox.ebay.com/ws/api.dll',
       headers: {
@@ -69,10 +70,10 @@ module.exports = function(config) {
         'Content-Type': 'text/xml'
       },
       body: xml
-    });
+    }), onComplete);
   }
 
-  function getMyEbaySelling(authToken) {
+  function getMyEbaySelling(authToken, onComplete) {
     var requestType = 'GetMyeBaySelling';
 
     var xml = xmlUtil.jsonToXML(
@@ -95,7 +96,7 @@ module.exports = function(config) {
         }
       });
 
-    return rp({
+    return xmlResponseToJson(rp({
       method: 'POST',
       uri: 'https://api.sandbox.ebay.com/ws/api.dll',
       headers: {
@@ -105,7 +106,7 @@ module.exports = function(config) {
         'Content-Type': 'text/xml'
       },
       body: xml
-    });
+    }), onComplete);
   }
 
   return {
@@ -114,4 +115,11 @@ module.exports = function(config) {
     getMyEbaySelling: getMyEbaySelling
   };
 
+  function xmlResponseToJson(rp, onComplete) {
+    return rp.then(function(xmlResponse) {
+      return xmlUtil.xmlToJSON(xmlResponse, function(err, json) {
+        onComplete(json);
+      });
+    });
+  }
 };

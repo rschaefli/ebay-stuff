@@ -10,7 +10,6 @@ var config = require('./config/' + process.env.ENVIRONMENT),
     app = express(),
     rp = require('request-promise'),
     path = require('path'),
-    xmlUtil = require('./lib/util/conversion/xml')(),
     ebayApi = require('./lib/ebayApi')(config);
 
 var dust = require('express-dustjs');
@@ -29,19 +28,16 @@ app.set('view engine', 'dust');
 app.set('views', path.resolve(__dirname, './views'));
 
 app.get('/', function(req, res) {
-  return ebayApi.getSessionId()
-    .then(function(result) {
-      return xmlUtil.xmlToJSON(result, function(err, json) {
-        console.log('json result', json);
+  return ebayApi.getSessionId(function(result) {
+      console.log('json result', result);
 
-        var sessionId = json.GetSessionIDResponse.SessionID[0];
+      var sessionId = result.GetSessionIDResponse.SessionID[0];
 
-        return res.render('index', {
-          ebayAuthUrl: config.ebayLoginHost + '/ws/eBayISAPI.dll?SignIn' +
-            '&runame=' + config.runame +
-            '&SessID=' + sessionId +
-            '&ruparams=' + encodeURIComponent('sessionId=' + sessionId)
-        });
+      return res.render('index', {
+        ebayAuthUrl: config.ebayLoginHost + '/ws/eBayISAPI.dll?SignIn' +
+          '&runame=' + config.runame +
+          '&SessID=' + sessionId +
+          '&ruparams=' + encodeURIComponent('sessionId=' + sessionId)
       });
 
       //return res.sendFile(path.join(__dirname+'/public/html/index.html'));
@@ -51,23 +47,16 @@ app.get('/', function(req, res) {
 app.get('/authenticating', function(req, res) {
   var sessionId = req.query.sessionId;
 
-  return ebayApi.fetchToken(sessionId)
-    .then(function(result) {
-      return xmlUtil.xmlToJSON(result, function(err, json) {
-        var ebayAuthToken = json.FetchTokenResponse.eBayAuthToken[0];
+  return ebayApi.fetchToken(sessionId, function(json) {
+    var ebayAuthToken = json.FetchTokenResponse.eBayAuthToken[0];
 
-        // TODO: stick the auth token on user's session
-        // also store it in the DB with the expiration date
+    // TODO: stick the auth token on user's session
+    // also store it in the DB with the expiration date
 
-        return ebayApi.getMyEbaySelling(ebayAuthToken)
-          .then(function(result) {
-            return xmlUtil.xmlToJSON(result, function(err, json) {
-              res.send(json);
-            });
-          });
-
-      });
+    return ebayApi.getMyEbaySelling(ebayAuthToken, function(json) {
+      res.send(json);
     });
+  });
 });
 
 app.get('/auth-success', function(req, res) {
