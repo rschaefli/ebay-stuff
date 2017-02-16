@@ -8,7 +8,8 @@
   "pg": {
     "driver": "pg",
     "host": "localhost",
-    "database": "ebay",
-    "schema": "ebay"
+    "port": "5432",
+    "database": "rix",
+    "schema": "public"
   }
 }

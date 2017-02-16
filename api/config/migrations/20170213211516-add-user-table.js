@@ -16,12 +16,12 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('user', {
-    id: { type: 'int', primaryKey: true },
-    createdOn: 'datetime',
-    username: 'string',
+    id: { type: 'int', primaryKey: true, autoIncrement: true },
+    created: 'datetime',
+    email: 'string',
     password: 'string',
-    ebayAuthToken: 'string',
-    authTokenExpiration: 'datetime'
+    ebayauthtoken: 'string',
+    ebayauthexpiration: 'datetime'
   });
 };
 

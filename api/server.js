@@ -3,7 +3,37 @@
 var config = require('./config/' + process.env.ENVIRONMENT),
     express = require('express'),
     app = express(),
-    ebayApi = require('./lib/ebay-api');
+    bodyParser = require('body-parser'),
+    ebayApi = require('./lib/ebay-api'),
+    promise = require('bluebird'),
+    pgp = require('pg-promise')({
+      promiseLib: promise
+    }),
+    db = pgp('postgres://localhost:5432/rix');
+
+app.use(bodyParser.json());
+
+app.post('/user', function(req, res) {
+  console.log('received post request to /user');
+  console.log('request body', req.body);
+
+  return db.one(
+    'insert into public.user(' +
+      'created, email, password,  ebayAuthToken, ebayAuthExpiration) ' +
+      'values($1, $2, $3, $4, $5) returning id',
+    [new Date(), 'johnny@pants.com', 'pants69', 'sdkfbsdlfls', new Date()])
+    .then(function (data) {
+      // success;
+      console.log('data', data);
+      res.send(data);
+    })
+    .catch(function (error) {
+      // error;
+      console.log('error', error);
+      res.send(error);
+    });
+
+});
 
 app.get('/', function (req, res) {
   res.send('Hello World!');

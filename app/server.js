@@ -27,6 +27,22 @@ app.engine('dust', dust.engine({
 app.set('view engine', 'dust');
 app.set('views', path.resolve(__dirname, './views'));
 
+app.get('/testUser', function(req, res) {
+  return rp({
+    method: 'POST',
+    uri: 'http://localhost:3000/user',
+    body: {
+      email: 'johnny@pants.com',
+      password: 'pants69',
+      authToken: 'sdkfbsdlfls',
+      authTokenExpiration: new Date()
+    },
+    json: true
+  }).then(function(result) {
+    res.send(result);
+  });
+});
+
 app.get('/', function(req, res) {
   return ebayApi.getSessionId(function(result) {
       console.log('json result', result);
