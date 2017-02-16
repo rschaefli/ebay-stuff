@@ -9,7 +9,7 @@ var config = require('./config/' + process.env.ENVIRONMENT),
     pgp = require('pg-promise')({
       promiseLib: promise
     }),
-    db = pgp('postgres://localhost:5432/rix');
+    db = pgp('postgres://localhost:5432/ebay');
 
 app.use(bodyParser.json());
 
@@ -18,7 +18,7 @@ app.post('/user', function(req, res) {
   console.log('request body', req.body);
 
   return db.one(
-    'insert into public.user(' +
+    'insert into manager.user(' +
       'created, email, password,  ebayAuthToken, ebayAuthExpiration) ' +
       'values($1, $2, $3, $4, $5) returning id',
     [new Date(), 'johnny@pants.com', 'pants69', 'sdkfbsdlfls', new Date()])

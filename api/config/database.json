@@ -1,15 +1,10 @@
 {
-  "defaultEnt": "dev",
+  "defaultEnv": "dev",
   "dev": {
-    "driver": "pg",
-    "filename": ":memory:"
-  },
-
-  "pg": {
     "driver": "pg",
     "host": "localhost",
     "port": "5432",
-    "database": "rix",
-    "schema": "public"
+    "database": "ebay",
+    "schema": "manager"
   }
 }
