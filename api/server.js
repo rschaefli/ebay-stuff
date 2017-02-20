@@ -21,7 +21,8 @@ app.post('/user', function(req, res) {
     'insert into manager.user(' +
       'created, email, password,  ebayAuthToken, ebayAuthExpiration) ' +
       'values($1, $2, $3, $4, $5) returning id',
-    [new Date(), 'johnny@pants.com', 'pants69', 'sdkfbsdlfls', new Date()])
+    [new Date(), req.body.email, req.body.password,
+     req.body.authToken || undefined, req.body.authTokenExpiration || undefined])
     .then(function (data) {
       // success;
       console.log('data', data);

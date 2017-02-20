@@ -8,9 +8,11 @@ var config = require('./config/' + process.env.ENVIRONMENT),
     credentials = {key: privateKey, cert: certificate},
     express = require('express'),
     app = express(),
+    bodyParser = require('body-parser'),
     rp = require('request-promise'),
     path = require('path'),
-    ebayApi = require('./lib/ebayApi')(config);
+    ebayApi = require('./lib/ebayApi')(config),
+    emailValidator = require('email-validator');
 
 var dust = require('express-dustjs');
 
@@ -26,6 +28,40 @@ app.engine('dust', dust.engine({
 }));
 app.set('view engine', 'dust');
 app.set('views', path.resolve(__dirname, './views'));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.get('/register', function(req, res) {
+  res.render('register');
+});
+
+app.post('/register', function(req, res) {
+  console.log('req body', req.body);
+  console.log(req.body.email);
+
+  if(req.body.password1 !== req.body.password2) {
+    res.render('register', {
+      error: 'Error: Passwords don\'t match'
+    });
+  } else if(!emailValidator.validate(req.body.email)) {
+    res.render('register', {
+      error: 'Error: Invalid email address'
+    });
+  } else {
+    return rp({
+      method: 'POST',
+      uri: config.apiHost + '/user',
+      body: {
+        email: req.body.email,
+        password: req.body.password1
+      },
+      json: true
+    }).then(function(result) {
+      res.send(result);
+    });
+  }
+});
 
 app.get('/testUser', function(req, res) {
   return rp({

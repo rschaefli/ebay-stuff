@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html>
+  <body>
+    {?error} <div style="color: red"> {error} </div> {/error}
+    <form action="/register" method="post">
+      Email Address:<br>
+      <input type="text" name="email"><br>
+      Password:<br>
+      <input type="password" name="password1"><br>
+      Re-type Password:<br>
+      <input type="password" name="password2"><br>
+      <input type="submit" value="Register">
+    </form>
+  </body>
+</html>
