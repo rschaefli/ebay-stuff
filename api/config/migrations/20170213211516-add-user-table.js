@@ -18,7 +18,7 @@ exports.up = function(db) {
   return db.createTable('user', {
     id: { type: 'int', primaryKey: true, autoIncrement: true },
     created: 'datetime',
-    email: 'string',
+    email: { type: 'string', unique: true },
     password: 'string',
     ebayauthtoken: 'string',
     ebayauthexpiration: 'datetime'

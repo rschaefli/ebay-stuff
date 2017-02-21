@@ -9,7 +9,8 @@ var config = require('./config/' + process.env.ENVIRONMENT),
     pgp = require('pg-promise')({
       promiseLib: promise
     }),
-    db = pgp('postgres://localhost:5432/ebay');
+    db = pgp('postgres://localhost:5432/ebay'),
+    _ = require('lodash');
 
 app.use(bodyParser.json());
 
@@ -25,13 +26,16 @@ app.post('/user', function(req, res) {
      req.body.authToken || undefined, req.body.authTokenExpiration || undefined])
     .then(function (data) {
       // success;
-      console.log('data', data);
-      res.send(data);
+      res.send(_.extend({
+        error: false
+      }, data));
     })
     .catch(function (error) {
       // error;
       console.log('error', error);
-      res.send(error);
+      res.send(_.extend({
+        error: true
+      }, error));
     });
 
 });

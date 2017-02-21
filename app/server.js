@@ -1,4 +1,4 @@
-'use strict';
+'USE strict';
 
 var config = require('./config/' + process.env.ENVIRONMENT),
     fs = require('fs'),
@@ -12,7 +12,9 @@ var config = require('./config/' + process.env.ENVIRONMENT),
     rp = require('request-promise'),
     path = require('path'),
     ebayApi = require('./lib/ebayApi')(config),
-    emailValidator = require('email-validator');
+    emailValidator = require('email-validator'),
+    encrypter = require('./lib/util/encrypter'),
+    _ = require('lodash');
 
 var dust = require('express-dustjs');
 
@@ -44,6 +46,10 @@ app.post('/register', function(req, res) {
     res.render('register', {
       error: 'Error: Passwords don\'t match'
     });
+  } else if(req.body.password1.length < 8) {
+    res.render('register', {
+      error: 'Error: Password must be at least 8 characters'
+    });
   } else if(!emailValidator.validate(req.body.email)) {
     res.render('register', {
       error: 'Error: Invalid email address'
@@ -54,11 +60,31 @@ app.post('/register', function(req, res) {
       uri: config.apiHost + '/user',
       body: {
         email: req.body.email,
-        password: req.body.password1
+        password: encrypter.cryptPasswordSync(req.body.password1)
       },
       json: true
     }).then(function(result) {
-      res.send(result);
+      if(result.error) {
+        var isDuplicateEmailError = _.every(
+          ['email', 'already', 'exists'],
+          function(item) {
+            console.log('item', item);
+            return result.detail.indexOf(item) !== -1;
+          });
+
+        var errorMessage = isDuplicateEmailError
+              ? 'Registration failed: this email is already registered'
+              : 'Registration failed. Please contact us for further assistance';
+
+        res.render('register', {
+          error: errorMessage
+        });
+      } else {
+        res.render('register', {
+          success: 'Registration successful! Login ',
+          loginUrl: '/login'
+        });
+      }
     });
   }
 });

@@ -2,6 +2,11 @@
 <html>
   <body>
     {?error} <div style="color: red"> {error} </div> {/error}
+    {?success}
+    <div style="color: green">
+      {success} <a href="{loginUrl}">here</a>
+    </div>
+    {/success}
     <form action="/register" method="post">
       Email Address:<br>
       <input type="text" name="email"><br>
