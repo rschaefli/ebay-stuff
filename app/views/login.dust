@@ -1,0 +1,13 @@
+<!DOCTYPE HTML>
+<html>
+  <body>
+    {?error}<div style="color: red">{error}</div>{/error}
+    <form action="/login" method="post">
+      Email Address:<br>
+      <input type="text" name="email"><br>
+      Password:<br>
+      <input type="password" name="password"><br>
+      <input type="submit" value="Login">
+    </form>
+  </body>
+</html>
