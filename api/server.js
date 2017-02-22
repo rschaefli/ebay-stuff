@@ -14,10 +14,25 @@ var config = require('./config/' + process.env.ENVIRONMENT),
 
 app.use(bodyParser.json());
 
-app.post('/user', function(req, res) {
-  console.log('received post request to /user');
-  console.log('request body', req.body);
+app.get('/user', function(req, res) {
+  var email = req.query.email;
 
+  db.one({
+    text: 'select * from manager.user where email = $1',
+    values: [email]
+  }).then(function (data) {
+    res.send(_.extend({
+      error: false
+    }, data));
+  }).catch(function (error) {
+    console.log('error', error);
+    res.send(_.extend({
+      error: true
+    }, error));
+  });
+});
+
+app.post('/user', function(req, res) {
   return db.one(
     'insert into manager.user(' +
       'created, email, password,  ebayAuthToken, ebayAuthExpiration) ' +
@@ -25,23 +40,16 @@ app.post('/user', function(req, res) {
     [new Date(), req.body.email, req.body.password,
      req.body.authToken || undefined, req.body.authTokenExpiration || undefined])
     .then(function (data) {
-      // success;
       res.send(_.extend({
         error: false
       }, data));
     })
     .catch(function (error) {
-      // error;
       console.log('error', error);
       res.send(_.extend({
         error: true
       }, error));
     });
-
-});
-
-app.get('/', function (req, res) {
-  res.send('Hello World!');
 });
 
 app.get('/ebay/listings', function(req, res) {

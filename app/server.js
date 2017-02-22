@@ -35,23 +35,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/register', function(req, res) {
-  res.render('register');
+  return res.render('register');
 });
 
 app.post('/register', function(req, res) {
-  console.log('req body', req.body);
-  console.log(req.body.email);
-
   if(req.body.password1 !== req.body.password2) {
-    res.render('register', {
+    return res.render('register', {
       error: 'Error: Passwords don\'t match'
     });
   } else if(req.body.password1.length < 8) {
-    res.render('register', {
+    return res.render('register', {
       error: 'Error: Password must be at least 8 characters'
     });
   } else if(!emailValidator.validate(req.body.email)) {
-    res.render('register', {
+    return res.render('register', {
       error: 'Error: Invalid email address'
     });
   } else {
@@ -76,11 +73,11 @@ app.post('/register', function(req, res) {
               ? 'Registration failed: this email is already registered'
               : 'Registration failed. Please contact us for further assistance';
 
-        res.render('register', {
+        return res.render('register', {
           error: errorMessage
         });
       } else {
-        res.render('register', {
+        return res.render('register', {
           success: 'Registration successful! Login ',
           loginUrl: '/login'
         });
@@ -89,19 +86,29 @@ app.post('/register', function(req, res) {
   }
 });
 
-app.get('/testUser', function(req, res) {
-  return rp({
-    method: 'POST',
-    uri: 'http://localhost:3000/user',
-    body: {
-      email: 'johnny@pants.com',
-      password: 'pants69',
-      authToken: 'sdkfbsdlfls',
-      authTokenExpiration: new Date()
-    },
+app.get('/login', function(req, res) {
+  return res.render('login');
+});
+
+app.post('/login', function(req, res) {
+  var email = req.body.email,
+      password =  req.body.password;
+
+  rp({
+    'method': 'GET',
+    uri: config.apiHost + '/user?email=' + email,
     json: true
   }).then(function(result) {
-    res.send(result);
+    console.log('result', result);
+
+    if (result.error ||
+       !encrypter.comparePasswordSync(password, result.password)) {
+      return res.render('login', {
+        error: 'Error: email/password combination not found'
+      });
+    }
+
+    return res.send(result);
   });
 });
 
@@ -132,27 +139,27 @@ app.get('/authenticating', function(req, res) {
     // also store it in the DB with the expiration date
 
     return ebayApi.getMyEbaySelling(ebayAuthToken, function(json) {
-      res.send(json);
+      return res.send(json);
     });
   });
 });
 
 app.get('/auth-success', function(req, res) {
-  res.send('Authentication successful!');
+  return res.send('Authentication successful!');
 });
 
 app.get('/auth-failure', function(req, res) {
-  res.send('Authentication failed');
+  return res.send('Authentication failed');
 });
 
 app.get('/listings', function (req, res) {
   return rp(config.apiHost + '/ebay/listings')
     .then(function(result) {
-      res.json(result);
+      return res.json(result);
     })
     .catch(function(err) {
       console.error(err);
-      res.json(err);
+      return res.json(err);
     });
 });
 
